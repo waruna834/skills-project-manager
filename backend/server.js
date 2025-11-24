@@ -10,6 +10,12 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
+// Import routes
+const personnelRoutes = require('./src/routes/personnelRoutes');
+
+// Use routes
+app.use('/api/personnel', personnelRoutes);
+
 // Test route
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running!' });
