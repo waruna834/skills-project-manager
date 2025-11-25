@@ -15,12 +15,14 @@ const personnelRoutes = require('./src/routes/personnelRoutes');
 const skillsRoutes = require('./src/routes/skillsRoutes'); 
 const projectsRoutes = require('./src/routes/projectsRoutes');
 const allocationsRoutes = require('./src/routes/allocationsRoutes');
+const analyticsRoutes = require('./src/routes/analyticsRoutes'); 
 
 // Use routes
 app.use('/api/personnel', personnelRoutes);
 app.use('/api/skills', skillsRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/allocations', allocationsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Test route
 app.get('/health', (req, res) => {
