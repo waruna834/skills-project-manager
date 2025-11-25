@@ -14,11 +14,13 @@ app.use(bodyParser.json());
 const personnelRoutes = require('./src/routes/personnelRoutes');
 const skillsRoutes = require('./src/routes/skillsRoutes'); 
 const projectsRoutes = require('./src/routes/projectsRoutes');
+const allocationsRoutes = require('./src/routes/allocationsRoutes');
 
 // Use routes
 app.use('/api/personnel', personnelRoutes);
 app.use('/api/skills', skillsRoutes);
 app.use('/api/projects', projectsRoutes);
+app.use('/api/allocations', allocationsRoutes);
 
 // Test route
 app.get('/health', (req, res) => {
