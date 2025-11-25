@@ -12,9 +12,11 @@ app.use(bodyParser.json());
 
 // Import routes
 const personnelRoutes = require('./src/routes/personnelRoutes');
+const skillsRoutes = require('./src/routes/skillsRoutes'); 
 
 // Use routes
 app.use('/api/personnel', personnelRoutes);
+app.use('/api/skills', skillsRoutes);
 
 // Test route
 app.get('/health', (req, res) => {
