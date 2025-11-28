@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { projectsAPI, matchingAPI } from '../services/api';
-import { Target, TrendingUp, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { projectsAPI, matchingAPI, allocationsAPI } from '../services/api';
+import { Target, TrendingUp, CheckCircle, XCircle, AlertCircle, UserPlus } from 'lucide-react';
 
 function ProjectMatching() {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState('');
+  const [selectedProjectData, setSelectedProjectData] = useState(null);
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sortBy, setSortBy] = useState('bestFit');
@@ -32,6 +33,7 @@ function ProjectMatching() {
     try {
       const response = await matchingAPI.findMatches(selectedProject, sortBy);
       setMatches(response.data.matches || []);
+      setSelectedProjectData(response.data.project);
       setLoading(false);
     } catch (error) {
       console.error('Error finding matches:', error);
@@ -39,6 +41,46 @@ function ProjectMatching() {
       setLoading(false);
     }
   };
+
+  const handleAssign = async (personnelId, personnelName) => {
+  if (!selectedProject || !selectedProjectData) {
+    alert('Please select a project first');
+    return;
+  }
+
+  // Format dates to YYYY-MM-DD
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
+  };
+
+  const confirmed = window.confirm(
+    `Assign ${personnelName} to ${selectedProjectData.name}?\n\n` +
+    `Project: ${selectedProjectData.start_date} to ${selectedProjectData.end_date}\n` +
+    `Allocation: 100% (Full-time)`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await allocationsAPI.create({
+      project_id: parseInt(selectedProject),
+      personnel_id: personnelId,
+      allocation_start: formatDate(selectedProjectData.start_date),
+      allocation_end: formatDate(selectedProjectData.end_date),
+      allocation_percentage: 100,
+      status: 'Confirmed'
+    });
+
+    alert(`✅ ${personnelName} successfully assigned to ${selectedProjectData.name}!`);
+    
+    // Refresh matches to show updated availability
+    handleMatch();
+  } catch (error) {
+    console.error('Error assigning personnel:', error);
+    alert('Failed to assign personnel: ' + (error.response?.data?.error || error.message));
+  }
+};
 
   const getStatusIcon = (status) => {
     if (status.includes('Excellent') || status.includes('Highly')) {
@@ -196,7 +238,15 @@ function ProjectMatching() {
                 marginBottom: '1rem'
               }}>
                 {getStatusIcon(match.recommendation)}
-                <strong>{match.recommendation}</strong>
+                <strong style={{ flex: 1 }}>{match.recommendation}</strong>
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => handleAssign(match.personnel_id, match.name)}
+                  style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+                >
+                  <UserPlus size={16} />
+                  Assign to Project
+                </button>
               </div>
 
               {match.missingSkills && match.missingSkills.length > 0 && (

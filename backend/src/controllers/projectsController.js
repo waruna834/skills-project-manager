@@ -7,10 +7,30 @@ exports.getAllProjects = async (req, res) => {
       SELECT p.*,
              COUNT(DISTINCT a.personnel_id) as current_team_size
       FROM projects p
-      LEFT JOIN allocations a ON p.id = a.project_id
+      LEFT JOIN allocations a ON p.id = a.project_id AND a.status IN ('Proposed', 'Confirmed')
       GROUP BY p.id
       ORDER BY p.created_at DESC
     `);
+
+    // Get team members for each project
+    for (let project of projects) {
+      const [team] = await db.query(`
+        SELECT 
+          per.id,
+          per.name,
+          per.role,
+          per.experience_level,
+          a.allocation_percentage,
+          a.status as allocation_status
+        FROM allocations a
+        JOIN personnel per ON a.personnel_id = per.id
+        WHERE a.project_id = ? AND a.status IN ('Proposed', 'Confirmed')
+        ORDER BY a.created_at
+      `, [project.id]);
+      
+      project.team = team;
+    }
+
     res.json(projects);
   } catch (error) {
     res.status(500).json({ error: error.message });
